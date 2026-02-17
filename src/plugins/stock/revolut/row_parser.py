@@ -25,12 +25,14 @@ class RowParser:
     @classmethod
     def _fiat_value(cls, row: Dict) -> FiatValue:
         currency = CurrencyBuilder.build(row['Currency'])
-        # e.g."-$1,003.01"
+        # Handles both old format: "-$1,003.01" and new format: "USD 50"
         amount_row = row['Total Amount']
-        if amount_row.startswith("-"):
-            amount_row = amount_row[1:]
-        amount_row = amount_row[1:].replace(",", "")
-        amount = float(amount_row)
+        
+        import re
+        # Extract digits, dots, and minus sign
+        clean_amount = re.sub(r'[^0-9.-]', '', amount_row)
+        
+        amount = abs(float(clean_amount))
         return FiatValue(amount, currency)
 
     @classmethod
